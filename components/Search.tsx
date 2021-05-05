@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from 'react'
-import { Accordion, Card, Form, Col, Container, Row, Button } from 'react-bootstrap';
+import { Accordion, Card, Form, Col, Container, Row, Button, Pagination } from 'react-bootstrap';
 import Layout from './Layout';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
@@ -23,6 +23,8 @@ const Search = ({ indexFields, actions, state }: Props) => {
   const [resultsCount, setResultsCount] = useState(0)
   const [isFuzzyMatch, setFuzzyMatch] = useState(false)
   const [searchLimit, setSearchLimit] = useState(10)
+  const [numPages, setNumPages] = useState(1)
+  const [currPage, setCurrPage] = useState(1)
 
   const TITLE: string = 'Search';
 
@@ -30,6 +32,30 @@ const Search = ({ indexFields, actions, state }: Props) => {
     actions.setTitle(TITLE);
   }, [])
 
+  const renderPagination = () => {
+    let pagesEl = null
+
+    if(numPages > 1){
+      let active = currPage > 0 ? currPage : 1;
+      let items = [];
+      const maxPages = numPages < 25 ? numPages : 25;
+      for (let number = 1; number <= maxPages; number++) {
+        items.push(
+          <Pagination.Item key={number} active={number === currPage} onClick={() => { setCurrPage(number); onSubmit(null, number) }}>
+            {number}
+          </Pagination.Item>,
+        );
+      }
+      if(numPages > maxPages){
+        items.push(
+          <Pagination.Ellipsis />
+        );
+      }
+      pagesEl = <Pagination>{items}</Pagination>
+    }
+    
+    return pagesEl
+  }
   /**
    * renderResults
    * @returns 
@@ -58,8 +84,11 @@ const Search = ({ indexFields, actions, state }: Props) => {
       })
     }
     return (
-      <Accordion className="mt-5" defaultActiveKey="0">
+      <Accordion className="mt-5 mb-5" defaultActiveKey="0">
         {results ? <p>Found {resultsCount} results</p> : null}
+        {results ? <Row sm={6}  className="mx-0">
+          {renderPagination()}
+          </Row> : null}
         {resultsEl}
       </Accordion>)
   }
@@ -68,12 +97,16 @@ const Search = ({ indexFields, actions, state }: Props) => {
    * onKeyDown
    * @param event 
    */
-  const onSubmit = async (event: any) => {
+  const onSubmit = async (event: any, page?: number) => {
 
-    axios.get(`/api/search?query=${query}&path=${searchPath}&limit=${searchLimit}&fuzzy=${isFuzzyMatch}`).then(response => {
+    if(!page){
+      setCurrPage(1)
+    }
+    axios.get(`/api/search?query=${query}&path=${searchPath}&page=${page? page : 1}&limit=${searchLimit}&fuzzy=${isFuzzyMatch}`).then(response => {
       console.log(`data`, response);
       setResults(response.data.result);
       setResultsCount(response.data.total);
+      setNumPages(Math.ceil(response.data.total/searchLimit));
       // actions.setResults(response.data);
     }).catch(error => {
       console.log(error.response)
@@ -89,7 +122,6 @@ const Search = ({ indexFields, actions, state }: Props) => {
    */
   const onQueryChange = async (event: any) => {
     setQuery(event.target.value);
-    setResults(null);
   }
 
   /**
@@ -146,7 +178,9 @@ const Search = ({ indexFields, actions, state }: Props) => {
             </Col>
           </Row>
 
+          
         </Col>
+
       </Container>
     </Layout>
   )

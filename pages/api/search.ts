@@ -8,9 +8,13 @@ handler.use(middleware);
 
 handler.get(async (req, res) => {
   
-  const { query, path, fuzzy } = req.query;
+  const { query, path, fuzzy, page, limit } = req.query;
   const { indexName, collection } = req.mongodb;
   
+  const limitValue = limit ? Number.parseInt(limit as string) : 10;
+  let pageValue = page ? Number.parseInt(page as string) - 1: 0;
+  pageValue = pageValue < 0 ? 0 : pageValue;
+
   const fuzzyOptions = fuzzy === "true" ? {
     "maxEdits": 2,
     "maxExpansions": 50,
@@ -29,19 +33,29 @@ handler.get(async (req, res) => {
 
   const skipLimitStage = [
     {
-      "$skip": 0
+      "$skip": pageValue * limitValue
     },
     {
-      "$limit": 10
+      "$limit": limitValue
     }
   ]
 
+  console.log(skipLimitStage);
+  
+
   const countStage = { $count: 'total' }
   try {
-    let { total } = await collection.aggregate([searchStage, countStage ]).next()
+    let totalMatches = 0
+    try {
+      let { total } = await collection.aggregate([searchStage, countStage ]).next()
+      totalMatches = total
+    } catch (error) {
+      console.log(`Did not return total from pipeline. Setting total to 0.`);
+      
+    }
 
     let result = await collection.aggregate([searchStage, ...skipLimitStage]).toArray();
-    return res.send({total, result});
+    return res.send({total: totalMatches, result});
   } catch (e) {
     res.status(500).send({ message: e.message });
   }
