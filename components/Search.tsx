@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from 'react'
-import { Accordion, Card, Form, Col, Container, Row } from 'react-bootstrap';
+import { Accordion, Card, Form, Col, Container, Row, Button } from 'react-bootstrap';
 import Layout from './Layout';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
@@ -79,14 +79,15 @@ const Search = ({ indexField, actions, state }: Props) => {
    * onKeyDown
    * @param event 
    */
-  const onKeyDown = async (event: any) => {
-    if (event.key === 'Enter') {
-      axios.get(`/api/search?query=${event.target.value}&path=${indexField}&limit=${searchLimit}&fuzzy=${isFuzzyMatch}`).then(response => {
-        console.log(`data`, response);
-        setResults(response.data);
-      }).catch(error => {
-        console.log(error.response)
-      })
+  const onSubmit = async (event: any) => {
+
+    axios.get(`/api/search?query=${query}&path=${indexField}&limit=${searchLimit}&fuzzy=${isFuzzyMatch}`).then(response => {
+      console.log(`data`, response);
+      setResults(response.data);
+    }).catch(error => {
+      console.log(error.response)
+    })
+    if (event) {
       event.preventDefault();
     }
   }
@@ -107,17 +108,24 @@ const Search = ({ indexField, actions, state }: Props) => {
     <Layout title={state.title}>
       <Container fluid className="pt-5 mx-auto" >
         <Col className="justify-items-center">
-          <Row>
+          <Row className="mx-1">
             <h1 className="title">Atlas Search <span className="subtitle">{state.title}</span> </h1>
           </Row>
           <Form className="mt-4">
             <Form.Row className="align-items-center">
-              <Col sm={6} className="my-1">
-                <Form.Control placeholder={`Enter your search text...`} onChange={onQueryChange} onKeyDown={onKeyDown} value={query} />
+              <Col sm={4} className="my-1">
+                <Form.Control placeholder={`Enter your search text...`} onChange={onQueryChange} onKeyDown={(event) => { if (query?.length && event.key === 'Enter') { onSubmit(event) }}} value={query} />
               </Col>
-              <Col xs="auto" className="my-1">
+              <Col sm={4} className="my-1">
+            <Button type="submit" className="my-1" onClick={onSubmit} disabled={!query || !query.length ? true : false}>
+                Search
+              </Button>
+              </Col>
+             
+            </Form.Row>
+            <Form.Row className="align-items-center">
+            <Col xs="auto" className="my-1" >
                 <Form.Check
-                  className="mt-4"
                   type="switch"
                   id="custom-switch"
                   label="Fuzzy Match"
@@ -126,6 +134,7 @@ const Search = ({ indexField, actions, state }: Props) => {
                   }}
                 />
               </Col>
+             
             </Form.Row>
           </Form>
 
