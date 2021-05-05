@@ -5,14 +5,14 @@ import Search from '../components/Search';
 import Layout from '../components/Layout';
 
 type Props = {
-  indexField: string
+  indexFields: string[]
 }
 
 export default function Home(props: Props) {
   return (
     <Layout title="Home">
       <Container fluid className="pt-5 mx-auto" >
-        <Search indexField={props.indexField} />
+        <Search indexFields={props.indexFields} />
       </Container>
     </Layout>
   )
@@ -20,6 +20,6 @@ export default function Home(props: Props) {
 
 
 export const getStaticProps: GetStaticProps = async () => {
-  const indexField = process.env.INDEX_FIELD
-  return { props: { indexField } }
+  const indexFields = process.env.INDEX_FIELD ? process.env.INDEX_FIELD.split(' ') : []
+  return { props: { indexFields } }
 }

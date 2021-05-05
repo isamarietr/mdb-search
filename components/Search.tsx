@@ -10,14 +10,15 @@ import { IAppState } from '../redux/initial-state';
 const axios = require('axios');
 
 type Props = {
-  indexField: string
+  indexFields: string[]
   actions: any;
   state: IAppState
 }
 
-const Search = ({ indexField, actions, state }: Props) => {
+const Search = ({ indexFields, actions, state }: Props) => {
 
   const [query, setQuery] = useState('')
+  const [searchPath, setSearchPath] = useState<string | string[]>('*')
   const [results, setResults] = useState(null)
   const [isFuzzyMatch, setFuzzyMatch] = useState(false)
   const [searchLimit, setSearchLimit] = useState(10)
@@ -45,9 +46,10 @@ const Search = ({ indexField, actions, state }: Props) => {
               <Card.Body>
                 {
                   Object.keys(result).map((key, index) => {
-                    return <Row key={`card-body-${index}`} ><code className={key === indexField ? 'highlight' : ''}><b>{key}</b>: {result[key]} </code></Row>
+                    const value = JSON.stringify(result[key], null, 2) 
+                    return <Row key={`card-body-${index}`} ><code className={value.toUpperCase().includes(query.toUpperCase()) ? 'highlight' : ''}><b>{key}</b>: { value }</code></Row>
                   })
-                }
+              }
               </Card.Body>
             </Accordion.Collapse>
           </Card>
@@ -62,28 +64,15 @@ const Search = ({ indexField, actions, state }: Props) => {
   }
 
   /**
-   * onSelect
-   * @param match 
-   */
-  const onSelect = (match: any) => {
-    setQuery(match[indexField]);
-    axios.get(`/api/document/${match._id}`).then(response => {
-      console.log(`data`, response);
-      setResults([response.data]);
-    }).catch(error => {
-      console.log(error.response)
-    })
-  }
-
-  /**
    * onKeyDown
    * @param event 
    */
   const onSubmit = async (event: any) => {
 
-    axios.get(`/api/search?query=${query}&path=${indexField}&limit=${searchLimit}&fuzzy=${isFuzzyMatch}`).then(response => {
+    axios.get(`/api/search?query=${query}&path=${searchPath}&limit=${searchLimit}&fuzzy=${isFuzzyMatch}`).then(response => {
       console.log(`data`, response);
       setResults(response.data);
+      // actions.setResults(response.data);
     }).catch(error => {
       console.log(error.response)
     })
@@ -112,6 +101,9 @@ const Search = ({ indexField, actions, state }: Props) => {
             <h1 className="title">Atlas Search <span className="subtitle">{state.title}</span> </h1>
           </Row>
           <Form className="mt-4">
+          <Form.Text className="mb-1" muted>
+                  Searching for values in { searchPath === '*' ? `all fields` : indexFields.join(', ')}
+                </Form.Text>
             <Form.Row className="align-items-center">
               <Col sm={4} className="my-1">
                 <Form.Control placeholder={`Enter your search text...`} onChange={onQueryChange} onKeyDown={(event) => { if (query?.length && event.key === 'Enter') { onSubmit(event) }}} value={query} />
@@ -133,8 +125,16 @@ const Search = ({ indexField, actions, state }: Props) => {
                     setFuzzyMatch(!isFuzzyMatch)
                   }}
                 />
+                
               </Col>
-             
+              {/* <Col xs="auto" className="my-1" >
+              <Form.Check
+                  type="switch"
+                  id="wildcard-switch"
+                  label="Search across all fields"
+                  checked disabled
+                />
+                </Col> */}
             </Form.Row>
           </Form>
 

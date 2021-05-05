@@ -20,14 +20,16 @@ handler.get(async (req, res) => {
     const pipeline = [
       {
         "$search": {
-          'index': indexName,
-          "autocomplete": {
-            "query": `${query}`,
-            "path": `${path}`,
-            "fuzzy": fuzzyOptions,
-            "tokenOrder": "sequential"
+          "index": indexName,
+          "text": {
+            "query": query,
+            "path": { "wildcard": "*" },
+            "fuzzy": fuzzyOptions
           }
         }
+      },
+      {
+        "$limit": 10
       }
     ]
 
