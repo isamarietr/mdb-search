@@ -1,7 +1,7 @@
 import { GetStaticProps } from 'next';
 import React from 'react'
 import { Container } from 'react-bootstrap';
-import Autocomplete from '../components/Autocomplete';
+import Search from '../components/Search';
 import Layout from '../components/Layout';
 
 type Props = {
@@ -12,7 +12,7 @@ export default function Home(props: Props) {
   return (
     <Layout title="Home">
       <Container fluid className="pt-5 mx-auto" >
-        <Autocomplete indexField={props.indexField} />
+        <Search indexField={props.indexField} />
       </Container>
     </Layout>
   )

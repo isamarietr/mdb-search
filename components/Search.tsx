@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from 'react'
 import { Accordion, Card, Form, Col, Container, Row } from 'react-bootstrap';
-import Layout from '../components/Layout';
+import Layout from './Layout';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import * as Actions from '../redux/actions';
@@ -15,36 +15,18 @@ type Props = {
   state: IAppState
 }
 
-const Autocomplete = ({ indexField, actions, state }: Props) => {
+const Search = ({ indexField, actions, state }: Props) => {
 
   const [query, setQuery] = useState('')
-  const [matches, setMatches] = useState(null)
   const [results, setResults] = useState(null)
   const [isFuzzyMatch, setFuzzyMatch] = useState(false)
   const [searchLimit, setSearchLimit] = useState(10)
 
-  const TITLE: string = 'Auto Complete';
+  const TITLE: string = 'Search';
 
   useEffect(() => {
-    console.log(`Changing title from ${state.title} to ${TITLE}`);
     actions.setTitle(TITLE);
   }, [])
-
-  /**
-   * renderMatches
-   * @returns 
-   */
-  const renderMatches = () => {
-    let matchList = null
-    if (matches) {
-      matchList = matches.map((match, index) => {
-        return match && match.score ? <a href="#" key={`match-${index}`} className="list-group-item list-group-item-action" onClick={() => { onSelect(match) }}>{match[indexField]} <i>(Score: {match.score.toFixed(3)})</i></a> : null
-      })
-    }
-    return <div className="list-group position-fixed z-index-1000">
-      {matchList}
-    </div>
-  }
 
   /**
    * renderResults
@@ -85,7 +67,6 @@ const Autocomplete = ({ indexField, actions, state }: Props) => {
    */
   const onSelect = (match: any) => {
     setQuery(match[indexField]);
-    setMatches(null);
     axios.get(`/api/document/${match._id}`).then(response => {
       console.log(`data`, response);
       setResults([response.data]);
@@ -99,7 +80,6 @@ const Autocomplete = ({ indexField, actions, state }: Props) => {
    * @param event 
    */
   const onKeyDown = async (event: any) => {
-    setMatches(null)
     if (event.key === 'Enter') {
       axios.get(`/api/search?query=${event.target.value}&path=${indexField}&limit=${searchLimit}&fuzzy=${isFuzzyMatch}`).then(response => {
         console.log(`data`, response);
@@ -118,17 +98,6 @@ const Autocomplete = ({ indexField, actions, state }: Props) => {
   const onQueryChange = async (event: any) => {
     setQuery(event.target.value);
     setResults(null);
-    if (event.target.value) {
-      axios.get(`/api/autocomplete?query=${event.target.value}&path=${indexField}&limit=${searchLimit}&fuzzy=${isFuzzyMatch}`).then(response => {
-        console.log(`data`, response);
-        setMatches(response.data);
-      }).catch(error => {
-        console.log(error.response)
-      })
-    }
-    else {
-      setMatches(null)
-    }
   }
 
   /**
@@ -139,16 +108,12 @@ const Autocomplete = ({ indexField, actions, state }: Props) => {
       <Container fluid className="pt-5 mx-auto" >
         <Col className="justify-items-center">
           <Row>
-            <h1 className="title">Atlas Search <span className="subtitle">Autocomplete</span> </h1>
+            <h1 className="title">Atlas Search <span className="subtitle">{state.title}</span> </h1>
           </Row>
           <Form className="mt-4">
             <Form.Row className="align-items-center">
               <Col sm={6} className="my-1">
-                <Form.Text className="mb-1" muted>
-                  Enter 2 characters or more to autocomplete values in {indexField}
-                </Form.Text>
-                <Form.Control placeholder={`Try entering "born" or "along"`} onChange={onQueryChange} onKeyDown={onKeyDown} value={query} />
-                {renderMatches()}
+                <Form.Control placeholder={`Enter your search text...`} onChange={onQueryChange} onKeyDown={onKeyDown} value={query} />
               </Col>
               <Col xs="auto" className="my-1">
                 <Form.Check
@@ -157,7 +122,6 @@ const Autocomplete = ({ indexField, actions, state }: Props) => {
                   id="custom-switch"
                   label="Fuzzy Match"
                   onClick={() => {
-                    setMatches(null);
                     setFuzzyMatch(!isFuzzyMatch)
                   }}
                 />
@@ -192,6 +156,4 @@ function mapDispatchToProps(dispatch) {
 export default connect(
   mapStateToProps,
   mapDispatchToProps
-)(Autocomplete);
-
-// export default Autocomplete
+)(Search);
