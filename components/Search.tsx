@@ -20,6 +20,7 @@ const Search = ({ indexFields, actions, state }: Props) => {
   const [query, setQuery] = useState('')
   const [searchPath, setSearchPath] = useState<string | string[]>('*')
   const [results, setResults] = useState(null)
+  const [resultsCount, setResultsCount] = useState(0)
   const [isFuzzyMatch, setFuzzyMatch] = useState(false)
   const [searchLimit, setSearchLimit] = useState(10)
 
@@ -58,7 +59,7 @@ const Search = ({ indexFields, actions, state }: Props) => {
     }
     return (
       <Accordion className="mt-5" defaultActiveKey="0">
-        {results ? <p>Found {results.length} results</p> : null}
+        {results ? <p>Found {resultsCount} results</p> : null}
         {resultsEl}
       </Accordion>)
   }
@@ -71,7 +72,8 @@ const Search = ({ indexFields, actions, state }: Props) => {
 
     axios.get(`/api/search?query=${query}&path=${searchPath}&limit=${searchLimit}&fuzzy=${isFuzzyMatch}`).then(response => {
       console.log(`data`, response);
-      setResults(response.data);
+      setResults(response.data.result);
+      setResultsCount(response.data.total);
       // actions.setResults(response.data);
     }).catch(error => {
       console.log(error.response)

@@ -13,28 +13,35 @@ handler.get(async (req, res) => {
   
   const fuzzyOptions = fuzzy === "true" ? {
     "maxEdits": 2,
-    "prefixLength": 3
+    "maxExpansions": 50,
   } : null
 
-  try {
-    const pipeline = [
-      {
-        "$search": {
-          "index": indexName,
-          "text": {
-            "query": query,
-            "path": { "wildcard": "*" },
-            "fuzzy": fuzzyOptions
-          }
-        }
-      },
-      {
-        "$limit": 10
+  const searchStage = {
+    "$search": {
+      "index": indexName,
+      "text": {
+        "query": query,
+        "path": { "wildcard": "*" },
+        "fuzzy": fuzzyOptions
       }
-    ]
+    }
+  };
 
-    let result = await collection.aggregate(pipeline).toArray();
-    return res.send(result);
+  const skipLimitStage = [
+    {
+      "$skip": 0
+    },
+    {
+      "$limit": 10
+    }
+  ]
+
+  const countStage = { $count: 'total' }
+  try {
+    let { total } = await collection.aggregate([searchStage, countStage ]).next()
+
+    let result = await collection.aggregate([searchStage, ...skipLimitStage]).toArray();
+    return res.send({total, result});
   } catch (e) {
     res.status(500).send({ message: e.message });
   }
