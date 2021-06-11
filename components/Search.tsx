@@ -37,6 +37,13 @@ const Search = ({ indexFields, actions, state }: Props) => {
     actions.setTitle(TITLE);
   }, [])
 
+  const resetResults = () => {
+    setResults([])
+    setNumPages(1)
+    setCurrPage(1)
+    setPayload(null)
+    setResultsCount(0)
+  }
   const renderPagination = () => {
     let pagesEl = null
 
@@ -119,7 +126,7 @@ const Search = ({ indexFields, actions, state }: Props) => {
    * @param event 
    */
   const onSubmit = async (event: any, page?: number) => {
-
+    // resetResults()
     if (!page) {
       setCurrPage(1)
     }
@@ -145,6 +152,10 @@ const Search = ({ indexFields, actions, state }: Props) => {
   const onQueryChange = async (event: any) => {
     setQuery(event.target.value);
   }
+  
+  const onFieldChange = async (event: any) => {
+    setSearchPath(event.target.value);
+  }
 
   /**
    * render
@@ -157,33 +168,18 @@ const Search = ({ indexFields, actions, state }: Props) => {
             <h1 className="title">Atlas Search <span className="subtitle">{state.title}</span> </h1>
           </Row>
           <Form className="mt-4 ">
-            <Form.Text className="mb-1" muted>
-              Searching for values in {searchPath === '*' ? `all fields` : indexFields.join(', ')}
-            </Form.Text>
             <Form.Row className="align-items-center">
               <Col sm={4} className="my-1">
+              <Form.Label>Search for...</Form.Label>
                 <Form.Control placeholder={`Enter your search text...`} onChange={onQueryChange} onKeyDown={(event) => { if (query?.length && event.key === 'Enter') { onSubmit(event) } }} value={query} />
               </Col>
               <Col sm={4} className="my-1">
-                <Button type="submit" className="my-1" onClick={onSubmit} disabled={!query || !query.length ? true : false}>
-                  Search
-              </Button>
-              <Button type="submit" className="ml-2" onClick={(event) => { 
-                setResults([])
-                setQuery('')
-                setNumPages(1)
-                setCurrPage(1)
-                setPayload(null)
-                setResultsCount(0)
-                event.preventDefault();
-              }} >
-                  Clear
-              </Button>
+              <Form.Label>In these fields...</Form.Label>
+                <Form.Control type="text" onChange={onFieldChange} onKeyDown={(event) => { if (query?.length && event.key === 'Enter') { onSubmit(event) } }} value={searchPath} />
               </Col>
-
             </Form.Row>
             <Form.Row className="align-items-center">
-              <Col xs="auto" className="my-1" >
+              <Col xs="auto" className="my-3" >
                 <Form.Check
                   type="switch"
                   id="custom-switch"
@@ -194,14 +190,18 @@ const Search = ({ indexFields, actions, state }: Props) => {
                 />
 
               </Col>
-              {/* <Col xs="auto" className="my-1" >
-              <Form.Check
-                  type="switch"
-                  id="wildcard-switch"
-                  label="Search across all fields"
-                  checked disabled
-                />
-                </Col> */}
+            </Form.Row>
+            <Form.Row>
+            <Button type="submit" className="my-2" onClick={onSubmit} disabled={!query || !query.length ? true : false}>
+                  Search
+              </Button>
+              <Button type="submit" className="ml-2 my-2" onClick={(event) => { 
+                setQuery('')
+                resetResults()
+                event.preventDefault();
+              }} >
+                  Clear
+              </Button>
             </Form.Row>
           </Form>
 
@@ -214,10 +214,13 @@ const Search = ({ indexFields, actions, state }: Props) => {
 
         </Col>
 
-        <Col sm={4} className="my-4">
-        <Row><h1>Search Stage</h1></Row>
+        <Col sm={4} className="">
         <Row>
-          { payload ? <DynamicReactJson src={payload} name ={ null} displayDataTypes={false} displayObjectSize={false}/> : <span>Perform a search to see the payload</span>}
+          <h1>View Search Stage</h1>
+        
+        </Row>
+        <Row>
+          { payload ? <DynamicReactJson src={payload} name ={ null} displayDataTypes={false} displayObjectSize={false}/> : <span>Perform a search to see the $search stage</span>}
         </Row>
         </Col>
       </Container>

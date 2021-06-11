@@ -20,13 +20,16 @@ handler.get(async (req, res) => {
     "maxExpansions": 50,
   } : null
 
+  
+  const pathOptions = !path || path === '*' ? { "wildcard": "*" } : path.toString().split(',')
+  console.log('path', pathOptions);
+
   const searchStage = {
     "$search": {
       "index": indexName,
       "text": {
         "query": query,
-        // "path": { "wildcard": "*" },
-        "path": [ "firstname" ],
+        "path": pathOptions,
         "fuzzy": fuzzyOptions
       }
     }
