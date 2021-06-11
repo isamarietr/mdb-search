@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from 'react'
-import { Accordion, Card, Form, Col, Container, Row, Button, Pagination } from 'react-bootstrap';
+import { Accordion, Card, Form, Col, Container, Row, Button, Pagination, Spinner } from 'react-bootstrap';
 import Layout from './Layout';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
@@ -30,6 +30,7 @@ const Search = ({ indexFields, actions, state }: Props) => {
   const [numPages, setNumPages] = useState(1)
   const [currPage, setCurrPage] = useState(1)
   const [payload, setPayload] = useState(null)
+  const [isLoading, setLoading] = useState(false)
 
   const TITLE: string = 'Search';
 
@@ -110,15 +111,18 @@ const Search = ({ indexFields, actions, state }: Props) => {
       })
       // resultsEl = <ReactJson src={{isa: "value"}} name={"$graphLookup"} displayDataTypes={false} />
     }
+
     return (
       <Accordion className="mt-5 mb-5" defaultActiveKey="0">
+        {isLoading ? <Spinner animation="border" variant="primary" /> : null}
         {results && payload ? <p>Found {resultsCount} results</p> : null}
         {results ? <Row sm={6} className="mx-0">
           {renderPagination()}
         </Row> : null}
         
         {resultsEl}
-      </Accordion>)
+      </Accordion>
+    )
   }
 
   /**
@@ -130,6 +134,7 @@ const Search = ({ indexFields, actions, state }: Props) => {
     if (!page) {
       setCurrPage(1)
     }
+    setLoading(true)
     axios.get(`/api/search?query=${query}&path=${searchPath}&page=${page ? page : 1}&limit=${searchLimit}&fuzzy=${isFuzzyMatch}`).then(response => {
       console.log(`data`, response);
       setResults(response.data.result);
@@ -137,6 +142,7 @@ const Search = ({ indexFields, actions, state }: Props) => {
       setPayload(response.data.payload);
       setNumPages(Math.ceil(response.data.total / searchLimit));
       // actions.setResults(response.data);
+      setLoading(false)
     }).catch(error => {
       console.log(error.response)
     })
