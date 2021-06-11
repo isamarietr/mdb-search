@@ -25,7 +25,8 @@ handler.get(async (req, res) => {
       "index": indexName,
       "text": {
         "query": query,
-        "path": { "wildcard": "*" },
+        // "path": { "wildcard": "*" },
+        "path": [ "firstname" ],
         "fuzzy": fuzzyOptions
       }
     }
@@ -54,8 +55,9 @@ handler.get(async (req, res) => {
       
     }
 
-    let result = await collection.aggregate([searchStage, ...skipLimitStage]).toArray();
-    return res.send({total: totalMatches, result});
+    const pipeline = [searchStage, ...skipLimitStage]
+    let result = await collection.aggregate(pipeline).toArray();
+    return res.send({total: totalMatches, result, payload: searchStage});
   } catch (e) {
     res.status(500).send({ message: e.message });
   }

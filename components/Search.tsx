@@ -6,6 +6,10 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import * as Actions from '../redux/actions';
 import { IAppState } from '../redux/initial-state';
+import ReactJson from 'react-json-view';
+import dynamic from 'next/dynamic'
+
+const DynamicReactJson = dynamic(import('react-json-view'), { ssr: false });
 
 const axios = require('axios');
 
@@ -25,6 +29,7 @@ const Search = ({ indexFields, actions, state }: Props) => {
   const [searchLimit, setSearchLimit] = useState(10)
   const [numPages, setNumPages] = useState(1)
   const [currPage, setCurrPage] = useState(1)
+  const [payload, setPayload] = useState(null)
 
   const TITLE: string = 'Search';
 
@@ -38,7 +43,7 @@ const Search = ({ indexFields, actions, state }: Props) => {
     if (numPages > 1) {
       let active = currPage > 0 ? currPage : 1;
       let items = [];
-      const maxPages = numPages < 25 ? numPages : 25;
+      const maxPages = numPages < 10 ? numPages : 10;
       for (let number = 1; number <= maxPages; number++) {
         items.push(
           <Pagination.Item key={number} active={number === currPage} onClick={() => { setCurrPage(number); onSubmit(null, number) }}>
@@ -77,7 +82,9 @@ const Search = ({ indexFields, actions, state }: Props) => {
     let resultsEl = null
     if (results) {
       resultsEl = results.map((result, index) => {
+        if(!result) return
         return (
+          // <ReactJson src={result} name={null} displayDataTypes={false} />
           <Card key={`card-${index}`} >
             <Accordion.Toggle eventKey={`${index}`} as={Card.Header}>
               Id: {result._id}
@@ -94,13 +101,15 @@ const Search = ({ indexFields, actions, state }: Props) => {
           </Card>
         )
       })
+      // resultsEl = <ReactJson src={{isa: "value"}} name={"$graphLookup"} displayDataTypes={false} />
     }
     return (
       <Accordion className="mt-5 mb-5" defaultActiveKey="0">
-        {results ? <p>Found {resultsCount} results</p> : null}
+        {results && payload ? <p>Found {resultsCount} results</p> : null}
         {results ? <Row sm={6} className="mx-0">
           {renderPagination()}
         </Row> : null}
+        
         {resultsEl}
       </Accordion>)
   }
@@ -118,6 +127,7 @@ const Search = ({ indexFields, actions, state }: Props) => {
       console.log(`data`, response);
       setResults(response.data.result);
       setResultsCount(response.data.total);
+      setPayload(response.data.payload);
       setNumPages(Math.ceil(response.data.total / searchLimit));
       // actions.setResults(response.data);
     }).catch(error => {
@@ -141,12 +151,12 @@ const Search = ({ indexFields, actions, state }: Props) => {
    */
   return (
     <Layout title={state.title}>
-      <Container fluid className="pt-5 mx-auto" >
-        <Col className="justify-items-center">
+      <Container as={Row} fluid className="pt-5 mx-auto" >
+        <Col sm={8}  className="justify-items-center">
           <Row className="mx-1">
             <h1 className="title">Atlas Search <span className="subtitle">{state.title}</span> </h1>
           </Row>
-          <Form className="mt-4">
+          <Form className="mt-4 ">
             <Form.Text className="mb-1" muted>
               Searching for values in {searchPath === '*' ? `all fields` : indexFields.join(', ')}
             </Form.Text>
@@ -157,6 +167,17 @@ const Search = ({ indexFields, actions, state }: Props) => {
               <Col sm={4} className="my-1">
                 <Button type="submit" className="my-1" onClick={onSubmit} disabled={!query || !query.length ? true : false}>
                   Search
+              </Button>
+              <Button type="submit" className="ml-2" onClick={(event) => { 
+                setResults([])
+                setQuery('')
+                setNumPages(1)
+                setCurrPage(1)
+                setPayload(null)
+                setResultsCount(0)
+                event.preventDefault();
+              }} >
+                  Clear
               </Button>
               </Col>
 
@@ -185,7 +206,7 @@ const Search = ({ indexFields, actions, state }: Props) => {
           </Form>
 
           <Row >
-            <Col sm={6} className="">
+            <Col sm={10} className="">
               {renderResults()}
             </Col>
           </Row>
@@ -193,6 +214,12 @@ const Search = ({ indexFields, actions, state }: Props) => {
 
         </Col>
 
+        <Col sm={4} className="my-4">
+        <Row><h1>Search Stage</h1></Row>
+        <Row>
+          { payload ? <DynamicReactJson src={payload} name ={ null} displayDataTypes={false} displayObjectSize={false}/> : <span>Perform a search to see the payload</span>}
+        </Row>
+        </Col>
       </Container>
     </Layout>
   )
