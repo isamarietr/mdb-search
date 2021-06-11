@@ -39,6 +39,7 @@ const Search = ({ indexFields, actions, state }: Props) => {
   }, [])
 
   const resetResults = () => {
+    setLoading(false)
     setResults([])
     setNumPages(1)
     setCurrPage(1)
@@ -79,7 +80,8 @@ const Search = ({ indexFields, actions, state }: Props) => {
       })
     }
 
-    return <Row key={`card-body`} > <code className={value.toString().toUpperCase().includes(query.toUpperCase()) ? 'highlight' : ''}><b>{keyPath}</b>: {Array.isArray(value) ? value.join(', ') : value}</code></Row>
+    return <Row key={`card-body`} > <code className={value.toString().toUpperCase().includes(query.toUpperCase()) ? '' : ''}><b>{keyPath}</b>: {Array.isArray(value) ? value.join(', ') : value}</code></Row>
+    // return <Row key={`card-body`} > <code className={value.toString().toUpperCase().includes(query.toUpperCase()) ? 'highlight' : ''}><b>{keyPath}</b>: {Array.isArray(value) ? value.join(', ') : value}</code></Row>
   }
 
   /**

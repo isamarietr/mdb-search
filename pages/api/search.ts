@@ -17,11 +17,11 @@ handler.get(async (req, res) => {
 
   const fuzzyOptions = fuzzy === "true" ? {
     "maxEdits": 2,
-    "maxExpansions": 50,
+    // "maxExpansions": 50,
   } : null
 
   
-  const pathOptions = !path || path === '*' ? { "wildcard": "*" } : path.toString().split(',')
+  const pathOptions = !path || path === '*' ? { "wildcard": "*" } : path.toString().replace(' ', '').split(',')
   console.log('path', pathOptions);
 
   const searchStage = {
