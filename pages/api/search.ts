@@ -31,10 +31,23 @@ handler.get(async (req, res) => {
         "query": query,
         "path": pathOptions,
         "fuzzy": fuzzyOptions
+      },
+      "highlight": {
+        "path": pathOptions
       }
     }
   };
 
+  const metadataStage = [
+    {
+      "$addFields": {
+        "meta": {
+          "score": { "$meta": "searchScore" },
+          "highlights": { "$meta": "searchHighlights" } 
+        }
+      }
+    }
+  ]
   const skipLimitStage = [
     {
       "$skip": pageValue * limitValue
@@ -58,7 +71,9 @@ handler.get(async (req, res) => {
       
     }
 
-    const pipeline = [searchStage, ...skipLimitStage]
+    const pipeline = [searchStage, ...metadataStage, ...skipLimitStage]
+    console.log(JSON.stringify(pipeline));
+    
     let result = await collection.aggregate(pipeline).toArray();
     return res.send({total: totalMatches, result, payload: searchStage});
   } catch (e) {

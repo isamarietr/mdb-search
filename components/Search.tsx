@@ -8,6 +8,7 @@ import * as Actions from '../redux/actions';
 import { IAppState } from '../redux/initial-state';
 import ReactJson from 'react-json-view';
 import dynamic from 'next/dynamic'
+const flatten = require('flat')
 
 const DynamicReactJson = dynamic(import('react-json-view'), { ssr: false });
 
@@ -72,15 +73,21 @@ const Search = ({ indexFields, actions, state }: Props) => {
   }
 
   // recursive fn
-  const renderResultObject = (key, value, level, parent?) => {
-    const keyPath = parent ? `${parent}.${key}` : key
-    if (typeof value === 'object' && !Array.isArray(value)) {
-      return Object.keys(value).map((key, index) => {
-        return renderResultObject(key, value[key], level + 1, keyPath)
-      })
-    }
+  const renderResultObject = (resultObj) => {
+    const {meta, ...resultFields} = resultObj
+    const flatObj = flatten(resultFields)
 
-    return <Row key={`card-body`} > <code className={value.toString().toUpperCase().includes(query.toUpperCase()) ? '' : ''}><b>{keyPath}</b>: {Array.isArray(value) ? value.join(', ') : value}</code></Row>
+    console.log(`flatObj`, flatObj);
+
+    const hitFields = meta.highlights.map((_h) => _h.path)
+    console.log(`hitFields`, hitFields);
+    
+    return Object.keys(flatObj).map((key, index) => {
+      if(key==='meta') return
+      return <Row key={`card-body-${index}`} ><code className={hitFields.includes(key) ? 'highlight' : ''}><b>{key}</b>: {flatObj[key].toString()}</code></Row>
+    })
+
+    // return <Row key={`card-body`} > <code className={value.toString().toUpperCase().includes(query.toUpperCase()) ? '' : ''}><b>{keyPath}</b>: {Array.isArray(value) ? value.join(', ') : value}</code></Row>
     // return <Row key={`card-body`} > <code className={value.toString().toUpperCase().includes(query.toUpperCase()) ? 'highlight' : ''}><b>{keyPath}</b>: {Array.isArray(value) ? value.join(', ') : value}</code></Row>
   }
 
@@ -102,9 +109,7 @@ const Search = ({ indexFields, actions, state }: Props) => {
             <Accordion.Collapse eventKey={`${index}`}>
               <Card.Body>
                 {
-                  Object.keys(result).map((key, index) => {
-                    return renderResultObject(key, result[key], 0)
-                  })
+                 renderResultObject(result)
                 }
               </Card.Body>
             </Accordion.Collapse>
@@ -221,16 +226,17 @@ const Search = ({ indexFields, actions, state }: Props) => {
 
 
         </Col>
-
+        <div className="code-bg"></div>
         <Col sm={4} className="">
-        <Row>
-          <h1>View Search Stage</h1>
+        <Row >
+          <h1 className="code-title">View Search Stage</h1>
         
         </Row>
-        <Row>
+        <Row className="my-4">
           { payload ? <DynamicReactJson src={payload} name ={ null} displayDataTypes={false} displayObjectSize={false}/> : <span>Perform a search to see the $search stage</span>}
         </Row>
         </Col>
+        
       </Container>
     </Layout>
   )
