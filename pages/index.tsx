@@ -20,6 +20,6 @@ export default function Home(props: Props) {
 
 
 export const getStaticProps: GetStaticProps = async () => {
-  const indexFields = process.env.INDEX_FIELD ? process.env.INDEX_FIELD.split(' ') : []
+  const indexFields = process.env.INDEX_FIELD ? process.env.INDEX_FIELD.split(',') : []
   return { props: { indexFields } }
 }

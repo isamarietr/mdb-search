@@ -24,6 +24,7 @@ const Search = ({ indexFields, actions, state }: Props) => {
 
   const [query, setQuery] = useState('')
   const [searchPath, setSearchPath] = useState<string | string[]>('*')
+  const [autocompletePath, setAutocompletePath] = useState<string>(null)
   const [results, setResults] = useState(null)
   const [resultsCount, setResultsCount] = useState(0)
   const [isFuzzyMatch, setFuzzyMatch] = useState(false)
@@ -32,6 +33,7 @@ const Search = ({ indexFields, actions, state }: Props) => {
   const [currPage, setCurrPage] = useState(1)
   const [payload, setPayload] = useState(null)
   const [isLoading, setLoading] = useState(false)
+  const [autocompleteMatches, setAutocompleteMatches] = useState(null)
 
   const TITLE: string = 'Search';
 
@@ -72,7 +74,39 @@ const Search = ({ indexFields, actions, state }: Props) => {
     return pagesEl
   }
 
-  // recursive fn
+
+  /**
+   * renderMatches
+   * @returns 
+   */
+   const renderAutocompleteMatches = () => {
+    let matchList = null
+    if (autocompleteMatches) {
+      matchList = autocompleteMatches.map((match, index) => {
+        return match && match.score ? <a href="#" key={`match-${index}`} className="list-group-item list-group-item-action z-index-1000" onClick={() => { onAutocompleteSelect(match) }}>{match.value} <i>(Score: {match.score.toFixed(3)})</i></a> : null
+      })
+    }
+    return <div className="list-group position-fixed z-index-1000">
+      {matchList}
+    </div>
+  }
+
+   /**
+   * onSelect
+   * @param match 
+   */
+    const onAutocompleteSelect = (match: any) => {
+      console.log(`autocomplete match`, match);
+      setQuery(match.value)
+      setAutocompleteMatches(null)
+      setPayload(null)
+    }
+
+    /**
+     * 
+     * @param resultObj 
+     * @returns 
+     */
   const renderResultObject = (resultObj) => {
     const {meta, ...resultFields} = resultObj
     const flatObj = flatten(resultFields)
@@ -86,9 +120,6 @@ const Search = ({ indexFields, actions, state }: Props) => {
       if(key==='meta') return
       return <Row key={`card-body-${index}`} ><code className={hitFields.includes(key) ? 'highlight' : ''}><b>{key}</b>: {flatObj[key].toString()}</code></Row>
     })
-
-    // return <Row key={`card-body`} > <code className={value.toString().toUpperCase().includes(query.toUpperCase()) ? '' : ''}><b>{keyPath}</b>: {Array.isArray(value) ? value.join(', ') : value}</code></Row>
-    // return <Row key={`card-body`} > <code className={value.toString().toUpperCase().includes(query.toUpperCase()) ? 'highlight' : ''}><b>{keyPath}</b>: {Array.isArray(value) ? value.join(', ') : value}</code></Row>
   }
 
   /**
@@ -116,7 +147,6 @@ const Search = ({ indexFields, actions, state }: Props) => {
           </Card>
         )
       })
-      // resultsEl = <ReactJson src={{isa: "value"}} name={"$graphLookup"} displayDataTypes={false} />
     }
 
     return (
@@ -163,11 +193,34 @@ const Search = ({ indexFields, actions, state }: Props) => {
    * @param event 
    */
   const onQueryChange = async (event: any) => {
+    const newQuery = event.target.value
     setQuery(event.target.value);
+    // console.log(newQuery);
+
+    if (newQuery && autocompletePath) {
+      axios.get(`/api/autocomplete?query=${newQuery}&path=${autocompletePath}&limit=${searchLimit}&fuzzy=${isFuzzyMatch}`).then(response => {
+        console.log(`data`, response);
+        const results = response.data.result.map((r) => {
+          return { value: r[autocompletePath], score: r['score']}
+        })
+        setAutocompleteMatches(results);
+        setPayload(response.data.payload);
+      }).catch(error => {
+        console.log(error.response)
+      })
+    }
+    else {
+      setAutocompleteMatches(null)
+    }
+
   }
   
   const onFieldChange = async (event: any) => {
     setSearchPath(event.target.value);
+  }
+
+  const onAutocompleteFieldChange = async (event: any) => {
+    setAutocompletePath(event.target.value);
   }
 
   /**
@@ -185,10 +238,15 @@ const Search = ({ indexFields, actions, state }: Props) => {
               <Col sm={4} className="my-1">
               <Form.Label>Search for...</Form.Label>
                 <Form.Control placeholder={`Enter your search text...`} onChange={onQueryChange} onKeyDown={(event) => { if (query?.length && event.key === 'Enter') { onSubmit(event) } }} value={query} />
+                {renderAutocompleteMatches()}
               </Col>
               <Col sm={4} className="my-1">
-              <Form.Label>In these fields...</Form.Label>
+              <Form.Label>In these indexed fields...</Form.Label>
                 <Form.Control type="text" onChange={onFieldChange} onKeyDown={(event) => { if (query?.length && event.key === 'Enter') { onSubmit(event) } }} value={searchPath} />
+              </Col>
+              <Col sm={2} className="my-1">
+              <Form.Label>Autocomplete using...</Form.Label>
+                <Form.Control placeholder={`Field name for autocomplete`} type="text" onChange={onAutocompleteFieldChange} value={autocompletePath} />
               </Col>
             </Form.Row>
             <Form.Row className="align-items-center">

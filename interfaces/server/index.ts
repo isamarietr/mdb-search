@@ -8,7 +8,9 @@ export interface ExtendedRequest extends NextApiRequest{
     db: Db
     client: MongoClient
     collection: Collection
-    indexName: string
-    indexField: string
+    indexName?: string
+    indexField?: string
+    autocompleteIndexName?: string
+    autocompleteIndexField?: string
   }
 }
