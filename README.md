@@ -1,10 +1,8 @@
-# MongoDB Autocomplete 
+# MongoDB Search 
 
-This application uses MongoDB's Autocomplete feature to display potential autocomplete matches in the search input field.
+This application uses MongoDB's Atlas search indexes to show search results. Autocomplete can also be enabled by providing the name of the field used for autocomplete in the "Autocomplete using..." section.
 
 Learn more about MongoDB's [Autocomplete](https://docs.atlas.mongodb.com/reference/atlas-search/autocomplete/).
-
-https://user-images.githubusercontent.com/23062728/115612913-c86a6f00-a2b9-11eb-9981-0fcd25ece29c.mov
 
 
 
@@ -15,6 +13,11 @@ Copy `sample.env.local` to `.env.local` to make this configuration accessible to
 Learn more about [Environment Variables](https://nextjs.org/docs/basic-features/environment-variables#loading-environment-variables) in Next.js.
 
 ## Development
+
+Install all dependencies 
+```bash
+npm i
+```
 
 Start the server in development mode with hot-code reloading.
 
