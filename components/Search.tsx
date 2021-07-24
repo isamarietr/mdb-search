@@ -287,7 +287,7 @@ const Search = ({ indexFields, actions, state }: Props) => {
         <div className="code-bg"></div>
         <Col sm={4} className="">
         <Row >
-          <h1 className="code-title">View Search Stage</h1>
+          <h1 className="code-title">View Pipeline</h1>
         
         </Row>
         <Row className="my-4">

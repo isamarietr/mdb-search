@@ -75,7 +75,7 @@ handler.get(async (req, res) => {
     console.log(JSON.stringify(pipeline));
     
     let result = await collection.aggregate(pipeline).toArray();
-    return res.send({total: totalMatches, result, payload: searchStage});
+    return res.send({total: totalMatches, result, payload: pipeline});
   } catch (e) {
     res.status(500).send({ message: e.message });
   }
