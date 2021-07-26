@@ -59,12 +59,13 @@ handler.get(async (req, res) => {
 
   console.log(skipLimitStage);
   
+  // Need to limit the count, this can take a long time if the result set is huge
+  const countStage = [{ $limit: 1001 }, { $count: 'total' }]
 
-  const countStage = { $count: 'total' }
   try {
     let totalMatches = 0
     try {
-      let { total } = await collection.aggregate([searchStage, countStage ]).next()
+      let { total } = await collection.aggregate([searchStage, ...countStage ]).next()
       totalMatches = total
     } catch (error) {
       console.log(`Did not return total from pipeline. Setting total to 0.`);

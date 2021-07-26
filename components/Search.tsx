@@ -100,6 +100,7 @@ const Search = ({ indexFields, actions, state }: Props) => {
       setQuery(match.value)
       setAutocompleteMatches(null)
       setPayload(null)
+      resetResults()
     }
 
     /**
@@ -152,7 +153,7 @@ const Search = ({ indexFields, actions, state }: Props) => {
     return (
       <Accordion className="mt-5 mb-5" defaultActiveKey="0">
         {isLoading ? <Spinner animation="border" variant="primary" /> : null}
-        {results && payload ? <p>Found {resultsCount} results</p> : null}
+        {results && payload ? <p>Found {resultsCount > 1000 ? <i>more than 1000</i> : resultsCount} results</p> : null}
         {results ? <Row sm={6} className="mx-0">
           {renderPagination()}
         </Row> : null}
