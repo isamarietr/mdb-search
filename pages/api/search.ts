@@ -8,7 +8,7 @@ handler.use(middleware);
 
 handler.get(async (req, res) => {
   
-  const { query, path, fuzzy, page, limit } = req.query;
+  const { query, path, fuzzy, page, limit, regex } = req.query;
   const { indexName, collection } = req.mongodb;
   
   const limitValue = limit ? Number.parseInt(limit as string) : 10;
@@ -24,7 +24,21 @@ handler.get(async (req, res) => {
   const pathOptions = !path || path === '*' ? { "wildcard": "*" } : path.toString().replace(' ', '').split(',')
   console.log('path', pathOptions);
 
-  const searchStage = {
+  const regexStage = {
+    "$search": {
+      "index": indexName,
+        "regex": {
+          "query": `.*${query}.*`,
+          "path": pathOptions,
+          "allowAnalyzedField": true
+        },
+        "highlight": {
+          "path": pathOptions
+        }
+    }
+  }
+  
+  const textStage = {
     "$search": {
       "index": indexName,
       "text": {
@@ -37,6 +51,8 @@ handler.get(async (req, res) => {
       }
     }
   };
+
+  const searchStage = regex ? regexStage : textStage
 
   const metadataStage = [
     {
@@ -59,9 +75,12 @@ handler.get(async (req, res) => {
 
   console.log(skipLimitStage);
   
+
   // Need to limit the count, this can take a long time if the result set is huge
   const countStage = [{ $limit: 1001 }, { $count: 'total' }]
 
+  // console.log(`Getting the total results`, JSON.stringify([searchStage, ...countStage ], null, 2));
+  
   try {
     let totalMatches = 0
     try {

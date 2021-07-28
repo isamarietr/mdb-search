@@ -28,6 +28,7 @@ const Search = ({ indexFields, actions, state }: Props) => {
   const [results, setResults] = useState(null)
   const [resultsCount, setResultsCount] = useState(0)
   const [isFuzzyMatch, setFuzzyMatch] = useState(false)
+  const [isRegex, setRegex] = useState(false)
   const [searchLimit, setSearchLimit] = useState(10)
   const [numPages, setNumPages] = useState(1)
   const [currPage, setCurrPage] = useState(1)
@@ -173,7 +174,7 @@ const Search = ({ indexFields, actions, state }: Props) => {
       setCurrPage(1)
     }
     setLoading(true)
-    axios.get(`/api/search?query=${query}&path=${searchPath}&page=${page ? page : 1}&limit=${searchLimit}&fuzzy=${isFuzzyMatch}`).then(response => {
+    axios.get(`/api/search?query=${query}&path=${searchPath}&page=${page ? page : 1}&limit=${searchLimit}&fuzzy=${isFuzzyMatch}&regex=${isRegex}`).then(response => {
       console.log(`data`, response);
       setResults(response.data.result);
       setResultsCount(response.data.total);
@@ -256,8 +257,20 @@ const Search = ({ indexFields, actions, state }: Props) => {
                   type="switch"
                   id="custom-switch"
                   label="Fuzzy Match"
+                  disabled={isRegex}
                   onClick={() => {
                     setFuzzyMatch(!isFuzzyMatch)
+                  }}
+                />
+
+              </Col>
+              <Col xs="auto" className="my-3" >
+                <Form.Check
+                  type="switch"
+                  id="regex-switch"
+                  label="Search exact substring"
+                  onClick={() => {
+                    setRegex(!isRegex)
                   }}
                 />
 
