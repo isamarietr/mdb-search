@@ -52,7 +52,7 @@ handler.get(async (req, res) => {
     }
   };
 
-  const searchStage = regex ? regexStage : textStage
+  const searchStage = regex === "true" ? regexStage : textStage
 
   const metadataStage = [
     {
