@@ -80,7 +80,7 @@ const Search = ({ indexFields, actions, state }: Props) => {
    * renderMatches
    * @returns 
    */
-   const renderAutocompleteMatches = () => {
+  const renderAutocompleteMatches = () => {
     let matchList = null
     if (autocompleteMatches) {
       matchList = autocompleteMatches.map((match, index) => {
@@ -92,34 +92,34 @@ const Search = ({ indexFields, actions, state }: Props) => {
     </div>
   }
 
-   /**
-   * onSelect
-   * @param match 
-   */
-    const onAutocompleteSelect = (match: any) => {
-      console.log(`autocomplete match`, match);
-      setQuery(match.value)
-      setAutocompleteMatches(null)
-      setPayload(null)
-      resetResults()
-    }
+  /**
+  * onSelect
+  * @param match 
+  */
+  const onAutocompleteSelect = (match: any) => {
+    console.log(`autocomplete match`, match);
+    setQuery(match.value)
+    setAutocompleteMatches(null)
+    setPayload(null)
+    resetResults()
+  }
 
-    /**
-     * 
-     * @param resultObj 
-     * @returns 
-     */
+  /**
+   * 
+   * @param resultObj 
+   * @returns 
+   */
   const renderResultObject = (resultObj) => {
-    const {meta, ...resultFields} = resultObj
+    const { meta, ...resultFields } = resultObj
     const flatObj = flatten(resultFields)
 
     console.log(`flatObj`, flatObj);
 
     const hitFields = meta.highlights.map((_h) => _h.path)
     console.log(`hitFields`, hitFields);
-    
+
     return Object.keys(flatObj).map((key, index) => {
-      if(key==='meta') return
+      if (key === 'meta') return
       return <Row key={`card-body-${index}`} ><code className={hitFields.includes(key) ? 'highlight' : ''}><b>{key}</b>: {flatObj[key].toString()}</code></Row>
     })
   }
@@ -132,7 +132,7 @@ const Search = ({ indexFields, actions, state }: Props) => {
     let resultsEl = null
     if (results) {
       resultsEl = results.map((result, index) => {
-        if(!result) return
+        if (!result) return
         return (
           // <ReactJson src={result} name={null} displayDataTypes={false} />
           <Card key={`card-${index}`} >
@@ -142,7 +142,7 @@ const Search = ({ indexFields, actions, state }: Props) => {
             <Accordion.Collapse eventKey={`${index}`}>
               <Card.Body>
                 {
-                 renderResultObject(result)
+                  renderResultObject(result)
                 }
               </Card.Body>
             </Accordion.Collapse>
@@ -158,7 +158,7 @@ const Search = ({ indexFields, actions, state }: Props) => {
         {results ? <Row sm={6} className="mx-0">
           {renderPagination()}
         </Row> : null}
-        
+
         {resultsEl}
       </Accordion>
     )
@@ -203,7 +203,7 @@ const Search = ({ indexFields, actions, state }: Props) => {
       axios.get(`/api/autocomplete?query=${newQuery}&path=${autocompletePath}&limit=${searchLimit}&fuzzy=${isFuzzyMatch}`).then(response => {
         console.log(`data`, response);
         const results = response.data.result.map((r) => {
-          return { value: r[autocompletePath], score: r['score']}
+          return { value: r[autocompletePath], score: r['score'] }
         })
         setAutocompleteMatches(results);
         setPayload(response.data.payload);
@@ -216,7 +216,7 @@ const Search = ({ indexFields, actions, state }: Props) => {
     }
 
   }
-  
+
   const onFieldChange = async (event: any) => {
     setSearchPath(event.target.value);
   }
@@ -231,24 +231,33 @@ const Search = ({ indexFields, actions, state }: Props) => {
   return (
     <Layout title={state.title}>
       <Container as={Row} fluid className="pt-5 mx-auto" >
-        <Col sm={8}  className="justify-items-center">
+        <Col sm={8} className="justify-items-center">
           <Row className="mx-1">
             <h1 className="title">Atlas Search <span className="subtitle">{state.title}</span> </h1>
           </Row>
           <Form className="mt-4 ">
             <Form.Row className="align-items-center">
               <Col sm={4} className="my-1">
-              <Form.Label>Search for...</Form.Label>
-                <Form.Control placeholder={`Enter your search text...`} onChange={onQueryChange} onKeyDown={(event) => { if (query?.length && event.key === 'Enter') { onSubmit(event) } }} value={query} />
+                <Form.Label>Search for...</Form.Label>
+                <Form.Control placeholder={`Your search text...`} onChange={onQueryChange} onKeyDown={(event) => { if (query?.length && event.key === 'Enter') { onSubmit(event) } }} value={query} />
                 {renderAutocompleteMatches()}
+                <Form.Text className="text-muted">
+                  We use this to query your index
+                </Form.Text>
               </Col>
-              <Col sm={4} className="my-1">
-              <Form.Label>In these indexed fields...</Form.Label>
+              <Col sm={3} className="my-1">
+                <Form.Label>In these indexed fields...</Form.Label>
                 <Form.Control type="text" onChange={onFieldChange} onKeyDown={(event) => { if (query?.length && event.key === 'Enter') { onSubmit(event) } }} value={searchPath} />
+                <Form.Text className="text-muted">
+                  Separate multiple fields with comma
+                </Form.Text>
               </Col>
-              <Col sm={2} className="my-1">
-              <Form.Label>Autocomplete using...</Form.Label>
-                <Form.Control placeholder={`Field name for autocomplete`} type="text" onChange={onAutocompleteFieldChange} value={autocompletePath} />
+              <Col sm={3} className="my-1">
+                <Form.Label>Autocomplete with...</Form.Label>
+                <Form.Control placeholder={`Autocomplete field name`} type="text" onChange={onAutocompleteFieldChange} value={autocompletePath} />
+                <Form.Text className="text-muted">
+                Optional: Provide a value to enable 
+                </Form.Text>
               </Col>
             </Form.Row>
             <Form.Row className="align-items-center">
@@ -277,15 +286,15 @@ const Search = ({ indexFields, actions, state }: Props) => {
               </Col>
             </Form.Row>
             <Form.Row>
-            <Button type="submit" className="my-2" onClick={onSubmit} disabled={!query || !query.length ? true : false}>
-                  Search
+              <Button type="submit" className="my-2" onClick={onSubmit} disabled={!query || !query.length ? true : false}>
+                Search
               </Button>
-              <Button type="submit" className="ml-2 my-2" onClick={(event) => { 
+              <Button type="submit" className="ml-2 my-2" onClick={(event) => {
                 setQuery('')
                 resetResults()
                 event.preventDefault();
               }} >
-                  Clear
+                Clear
               </Button>
             </Form.Row>
           </Form>
@@ -300,15 +309,15 @@ const Search = ({ indexFields, actions, state }: Props) => {
         </Col>
         <div className="code-bg"></div>
         <Col sm={4} className="">
-        <Row >
-          <h1 className="code-title">View Pipeline</h1>
-        
-        </Row>
-        <Row className="my-4">
-          { payload ? <DynamicReactJson src={payload} name ={ null} displayDataTypes={false} displayObjectSize={false}/> : <span>Perform a search to see the $search stage</span>}
-        </Row>
+          <Row >
+            <h1 className="code-title">View Pipeline</h1>
+
+          </Row>
+          <Row className="my-4">
+            {payload ? <DynamicReactJson src={payload} name={null} displayDataTypes={false} displayObjectSize={false} /> : <span>Perform a search to see the $search stage</span>}
+          </Row>
         </Col>
-        
+
       </Container>
     </Layout>
   )
