@@ -40,6 +40,9 @@ handler.get(async (req, res) => {
         }
       },
       {
+        '$sort': { score: -1 }
+      },
+      {
         '$set': {
           [path as string]: "$_id"
         }

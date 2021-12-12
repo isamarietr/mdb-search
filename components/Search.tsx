@@ -203,7 +203,9 @@ const Search = ({ indexFields, actions, state }: Props) => {
       axios.get(`/api/autocomplete?query=${newQuery}&path=${autocompletePath}&limit=${searchLimit}&fuzzy=${isFuzzyMatch}`).then(response => {
         console.log(`data`, response);
         const results = response.data.result.map((r) => {
-          return { value: r[autocompletePath], score: r['score'] }
+          console.log({ value: r["_id"], score: r['score'] });
+          
+          return { value: r["_id"], score: r['score'] }
         })
         setAutocompleteMatches(results);
         setPayload(response.data.payload);
