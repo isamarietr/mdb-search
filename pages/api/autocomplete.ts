@@ -7,8 +7,8 @@ const handler = nextConnect<ExtendedRequest, NextApiResponse>();
 handler.use(middleware);
 
 handler.get(async (req, res) => {
-  const { query, path, limit, fuzzy } = req.query;
-  const { autocompleteIndexName, collection } = req.mongodb;
+  const { query, path, limit, fuzzy, collection, searchIndex, autoIndex } = req.query;
+  const { db } = req.mongodb;
 
   const fuzzyOptions = fuzzy === "true" ? {
     "maxEdits": 2,
@@ -19,7 +19,7 @@ handler.get(async (req, res) => {
     const pipeline = [
       {
         "$search": {
-          'index': autocompleteIndexName,
+          'index': autoIndex ? autoIndex : 'default',
           "autocomplete": {
             "query": `${query}`,
             "path": path,
@@ -76,7 +76,7 @@ handler.get(async (req, res) => {
 
     // console.log(`Autocomplete pipeline`, JSON.stringify(pipeline, null, 2));
     
-    let result = await collection.aggregate(pipeline).toArray();
+    let result = await db.collection(collection as string).aggregate(pipeline).toArray();
     return res.send({result, payload: pipeline});
   } catch (e) {
     res.status(500).send({ message: e.message });

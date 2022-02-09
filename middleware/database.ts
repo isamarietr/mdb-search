@@ -18,18 +18,10 @@ async function database(req: any, res: any, next: any) {
 
       const db = client.db(process.env.DB_NAME);
       const collection = db.collection(process.env.COLLECTION_NAME);
-      const indexName = process.env.INDEX_NAME;
-      const indexField = process.env.INDEX_FIELD;
-      const autocompleteIndexName = process.env.AUTOCOMPLETE_INDEX_NAME;
-      const autocompleteIndexField = process.env.AUTOCOMPLETE_INDEX_FIELD;
       global['mongodb'] = {
         client,
         db,
-        collection,
-        indexField,
-        indexName,
-        autocompleteIndexName,
-        autocompleteIndexField
+        collection
       }
     }
 
