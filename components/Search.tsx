@@ -137,7 +137,7 @@ const Search = ({ indexFields, actions, state }: Props) => {
           // <ReactJson src={result} name={null} displayDataTypes={false} />
           <Card key={`card-${index}`} >
             <Accordion.Toggle eventKey={`${index}`} as={Card.Header}>
-              Id: {result._id}
+              ID: {result._id}
             </Accordion.Toggle>
             <Accordion.Collapse eventKey={`${index}`}>
               <Card.Body>
