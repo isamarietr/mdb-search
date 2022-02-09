@@ -8,8 +8,9 @@ handler.use(middleware);
 
 handler.get(async (req, res) => {
   
-  const { query, path, fuzzy, page, limit, regex } = req.query;
-  const { indexName, collection } = req.mongodb;
+  const { query, path, fuzzy, page, limit, regex, collection, searchIndex, autoIndex } = req.query;
+  const { db } = req.mongodb;
+
   
   const limitValue = limit ? Number.parseInt(limit as string) : 10;
   let pageValue = page ? Number.parseInt(page as string) - 1: 0;
@@ -26,7 +27,7 @@ handler.get(async (req, res) => {
 
   const regexStage = {
     "$search": {
-      "index": indexName,
+      "index": searchIndex ? searchIndex : 'default',
         "regex": {
           "query": `.*${query}.*`,
           "path": pathOptions,
@@ -40,7 +41,7 @@ handler.get(async (req, res) => {
   
   const textStage = {
     "$search": {
-      "index": indexName,
+      "index": searchIndex ? searchIndex : 'default',
       "text": {
         "query": query,
         "path": pathOptions,
@@ -84,7 +85,7 @@ handler.get(async (req, res) => {
   try {
     let totalMatches = 0
     try {
-      let { total } = await collection.aggregate([searchStage, ...countStage ]).next()
+      let { total } = await db.collection(collection as string).aggregate([searchStage, ...countStage ]).next()
       totalMatches = total
     } catch (error) {
       console.log(`Did not return total from pipeline. Setting total to 0.`);
@@ -94,7 +95,7 @@ handler.get(async (req, res) => {
     const pipeline = [searchStage, ...metadataStage, ...skipLimitStage]
     console.log(JSON.stringify(pipeline));
     
-    let result = await collection.aggregate(pipeline).toArray();
+    let result = await db.collection(collection as string).aggregate(pipeline).toArray();
     return res.send({total: totalMatches, result, payload: pipeline});
   } catch (e) {
     res.status(500).send({ message: e.message });

@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { Accordion, Card, Form, Col, Container, Row, Button, Pagination, Spinner } from 'react-bootstrap';
 import Layout from './Layout';
 import { connect } from 'react-redux';
@@ -36,7 +36,11 @@ const Search = ({ indexFields, actions, state }: Props) => {
   const [isLoading, setLoading] = useState(false)
   const [autocompleteMatches, setAutocompleteMatches] = useState(null)
 
-  const TITLE: string = 'Search';
+  const collectionRef = useRef<HTMLInputElement>()
+  const searchIndexRef = useRef<HTMLInputElement>()
+  const autocompleteIndexRef = useRef<HTMLInputElement>()
+
+  const TITLE: string = 'Search and Autocomplete Demo';
 
   useEffect(() => {
     actions.setTitle(TITLE);
@@ -75,7 +79,50 @@ const Search = ({ indexFields, actions, state }: Props) => {
     return pagesEl
   }
 
+  /**
+   * 
+   * @returns 
+   */
+  const renderDatabaseConfig = () => {
+    return <Row >
+      <Col sm={10} className="">
+        <Accordion defaultActiveKey="0">
+          <Card>
+            <Accordion.Toggle as={Card.Header} eventKey="0">
+              Search Index Details
+            </Accordion.Toggle>
+            <Accordion.Collapse eventKey="0">
+              <Form className="my-2 mx-4">
+                <Form.Row className="align-items-top">
+                  <Col sm={4} className="my-2">
+                    <Form.Text className="text-muted">
+                      Collection
+                    </Form.Text>
+                    <Form.Control placeholder={`Collection name`} ref={collectionRef} />
+                  </Col>
+                  <Col sm={3} className="my-2">
+                  <Form.Text className="text-muted">
+                      Search Index Name
+                    </Form.Text>
+                    <Form.Control type="text" ref={searchIndexRef}  placeholder={`default`}/>
+                  </Col>
+                  <Col sm={3} className="my-2">
+                  <Form.Text className="text-muted">
+                      Autocomplete Index Name
+                    </Form.Text>
+                    <Form.Control placeholder={`default`} type="text" ref={autocompleteIndexRef}/>
+                  </Col>
+                </Form.Row>
+              </Form>
+            </Accordion.Collapse>
+          </Card>
 
+        </Accordion>
+      </Col>
+    </Row>
+
+
+  }
   /**
    * renderMatches
    * @returns 
@@ -174,7 +221,7 @@ const Search = ({ indexFields, actions, state }: Props) => {
       setCurrPage(1)
     }
     setLoading(true)
-    axios.get(`/api/search?query=${query}&path=${searchPath}&page=${page ? page : 1}&limit=${searchLimit}&fuzzy=${isFuzzyMatch}&regex=${isRegex}`).then(response => {
+    axios.get(`/api/search?collection=${collectionRef.current.value}&searchIndex=${searchIndexRef.current.value}&autoIndex=${autocompleteIndexRef.current.value}&query=${query}&path=${searchPath}&page=${page ? page : 1}&limit=${searchLimit}&fuzzy=${isFuzzyMatch}&regex=${isRegex}`).then(response => {
       console.log(`data`, response);
       setAutocompleteMatches(null)
       setResults(response.data.result);
@@ -201,11 +248,11 @@ const Search = ({ indexFields, actions, state }: Props) => {
     // console.log(newQuery);
 
     if (newQuery && autocompletePath) {
-      axios.get(`/api/autocomplete?query=${newQuery}&path=${autocompletePath}&limit=${searchLimit}&fuzzy=${isFuzzyMatch}`).then(response => {
+      axios.get(`/api/autocomplete?collection=${collectionRef.current.value}&searchIndex=${searchIndexRef.current.value}&autoIndex=${autocompleteIndexRef.current.value}&query=${newQuery}&path=${autocompletePath}&limit=${searchLimit}&fuzzy=${isFuzzyMatch}`).then(response => {
         console.log(`data`, response);
         const results = response.data.result.map((r) => {
           console.log({ value: r["_id"], score: r['score'] });
-          
+
           return { value: r["_id"], score: r['score'] }
         })
         setAutocompleteMatches(results);
@@ -238,7 +285,8 @@ const Search = ({ indexFields, actions, state }: Props) => {
           <Row className="mx-1">
             <h1 className="title">Atlas Search <span className="subtitle">{state.title}</span> </h1>
           </Row>
-          <Form className="mt-4 ">
+          {renderDatabaseConfig()}
+          <Form className="mt-4">
             <Form.Row className="align-items-center">
               <Col sm={4} className="my-1">
                 <Form.Label>Search for...</Form.Label>
@@ -259,7 +307,7 @@ const Search = ({ indexFields, actions, state }: Props) => {
                 <Form.Label>Autocomplete with...</Form.Label>
                 <Form.Control placeholder={`Autocomplete field name`} type="text" onChange={onAutocompleteFieldChange} value={autocompletePath} />
                 <Form.Text className="text-muted">
-                Optional: Provide a value to enable 
+                  Optional: Provide a value to enable
                 </Form.Text>
               </Col>
             </Form.Row>
