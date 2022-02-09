@@ -17,11 +17,9 @@ async function database(req: any, res: any, next: any) {
       }
 
       const db = client.db(process.env.DB_NAME);
-      const collection = db.collection(process.env.COLLECTION_NAME);
       global['mongodb'] = {
         client,
-        db,
-        collection
+        db
       }
     }
 
