@@ -176,6 +176,7 @@ const Search = ({ indexFields, actions, state }: Props) => {
     setLoading(true)
     axios.get(`/api/search?query=${query}&path=${searchPath}&page=${page ? page : 1}&limit=${searchLimit}&fuzzy=${isFuzzyMatch}&regex=${isRegex}`).then(response => {
       console.log(`data`, response);
+      setAutocompleteMatches(null)
       setResults(response.data.result);
       setResultsCount(response.data.total);
       setPayload(response.data.payload);
