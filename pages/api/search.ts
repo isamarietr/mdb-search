@@ -8,7 +8,7 @@ handler.use(middleware);
 
 handler.get(async (req, res) => {
   
-  const { query, path, fuzzy, page, limit, regex, collection, searchIndex, autoIndex } = req.query;
+  const { query, path, fuzzy, page, limit, regex, collection, searchIndex, synonyms, autoIndex } = req.query;
   const { db } = req.mongodb;
 
   
@@ -45,7 +45,8 @@ handler.get(async (req, res) => {
       "text": {
         "query": query,
         "path": pathOptions,
-        "fuzzy": fuzzyOptions
+        "fuzzy": fuzzyOptions,
+        synonyms
       },
       "highlight": {
         "path": pathOptions

@@ -36,6 +36,7 @@ const Search = ({ indexFields, actions, state }: Props) => {
   const [isLoading, setLoading] = useState(false)
   const [autocompleteMatches, setAutocompleteMatches] = useState(null)
 
+  const synonymsCollectionRef = useRef<HTMLInputElement>()
   const collectionRef = useRef<HTMLInputElement>()
   const searchIndexRef = useRef<HTMLInputElement>()
   const autocompleteIndexRef = useRef<HTMLInputElement>()
@@ -94,19 +95,27 @@ const Search = ({ indexFields, actions, state }: Props) => {
             <Accordion.Collapse eventKey="0">
               <Form className="my-2 mx-4">
                 <Form.Row className="align-items-top">
-                  <Col sm={4} className="my-2">
+                  <Col  className="my-2">
                     <Form.Text className="text-muted">
                       Collection
                     </Form.Text>
                     <Form.Control placeholder={`Collection name`} ref={collectionRef} />
                   </Col>
-                  <Col sm={3} className="my-2">
+                  <Col  className="my-2">
+                    <Form.Text className="text-muted">
+                    Synonyms Collection
+                    </Form.Text>
+                    <Form.Control placeholder={`Synonyms Collection`} ref={synonymsCollectionRef} />
+                  </Col>
+                  </Form.Row>
+                  <Form.Row className="align-items-top">
+                  <Col  className="my-2">
                   <Form.Text className="text-muted">
                       Search Index Name
                     </Form.Text>
                     <Form.Control type="text" ref={searchIndexRef}  placeholder={`default`}/>
                   </Col>
-                  <Col sm={3} className="my-2">
+                  <Col  className="my-2">
                   <Form.Text className="text-muted">
                       Autocomplete Index Name
                     </Form.Text>
@@ -221,7 +230,7 @@ const Search = ({ indexFields, actions, state }: Props) => {
       setCurrPage(1)
     }
     setLoading(true)
-    axios.get(`/api/search?collection=${collectionRef.current.value}&searchIndex=${searchIndexRef.current.value}&autoIndex=${autocompleteIndexRef.current.value}&query=${query}&path=${searchPath}&page=${page ? page : 1}&limit=${searchLimit}&fuzzy=${isFuzzyMatch}&regex=${isRegex}`).then(response => {
+    axios.get(`/api/search?synonyms=${synonymsCollectionRef.current.value}&collection=${collectionRef.current.value}&searchIndex=${searchIndexRef.current.value}&autoIndex=${autocompleteIndexRef.current.value}&query=${query}&path=${searchPath}&page=${page ? page : 1}&limit=${searchLimit}&fuzzy=${isFuzzyMatch}&regex=${isRegex}`).then(response => {
       console.log(`data`, response);
       setAutocompleteMatches(null)
       setResults(response.data.result);
@@ -324,7 +333,7 @@ const Search = ({ indexFields, actions, state }: Props) => {
                 />
 
               </Col>
-              <Col xs="auto" className="my-3" >
+              {/* <Col xs="auto" className="my-3" >
                 <Form.Check
                   type="switch"
                   id="regex-switch"
@@ -334,7 +343,7 @@ const Search = ({ indexFields, actions, state }: Props) => {
                   }}
                 />
 
-              </Col>
+              </Col> */}
             </Form.Row>
             <Form.Row>
               <Button type="submit" className="my-2" onClick={onSubmit} disabled={!query || !query.length ? true : false}>
