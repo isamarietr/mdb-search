@@ -46,7 +46,7 @@ handler.get(async (req, res) => {
         "query": query,
         "path": pathOptions,
         "fuzzy": fuzzyOptions,
-        synonyms
+        "synonyms": synonyms ? synonyms : null 
       },
       "highlight": {
         "path": pathOptions

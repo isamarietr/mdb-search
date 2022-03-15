@@ -95,31 +95,45 @@ const Search = ({ indexFields, actions, state }: Props) => {
             <Accordion.Collapse eventKey="0">
               <Form className="my-2 mx-4">
                 <Form.Row className="align-items-top">
-                  <Col  className="my-2">
-                    <Form.Text className="text-muted">
+                  <Col className="my-2">
+                    <Form.Text>
                       Collection
                     </Form.Text>
-                    <Form.Control placeholder={`Collection name`} ref={collectionRef} />
+                    <Form.Control ref={collectionRef} />
                   </Col>
-                  <Col  className="my-2">
-                    <Form.Text className="text-muted">
-                    Synonyms Collection
+                  <Col className="my-2">
+                    <Form.Text >
+                      Synonyms Collection
                     </Form.Text>
-                    <Form.Control placeholder={`Synonyms Collection`} ref={synonymsCollectionRef} />
+                    <Form.Control  ref={synonymsCollectionRef} />
                   </Col>
-                  </Form.Row>
-                  <Form.Row className="align-items-top">
-                  <Col  className="my-2">
-                  <Form.Text className="text-muted">
+                </Form.Row>
+                
+                <Form.Row className="align-items-top">
+                  <Col className="my-2">
+                    <Form.Text >
                       Search Index Name
                     </Form.Text>
-                    <Form.Control type="text" ref={searchIndexRef}  placeholder={`default`}/>
+                    <Form.Control type="text" ref={searchIndexRef} placeholder={`default`} />
                   </Col>
-                  <Col  className="my-2">
-                  <Form.Text className="text-muted">
+                  <Col className="my-2">
+                    <Form.Text >
                       Autocomplete Index Name
                     </Form.Text>
-                    <Form.Control placeholder={`default`} type="text" ref={autocompleteIndexRef}/>
+                    <Form.Control placeholder={`default`} type="text" ref={autocompleteIndexRef} />
+                  </Col>
+                </Form.Row>
+                <Form.Row className="align-items-top">
+                  <Col className="my-2">
+                    <Form.Text >Path</Form.Text>
+                    <Form.Control type="text" onChange={onFieldChange} onKeyDown={(event) => { if (query?.length && event.key === 'Enter') { onSubmit(event) } }} value={searchPath} />
+                  </Col>
+                  <Col className="my-2">
+                    <Form.Text>Autocomplete Path</Form.Text>
+                    <Form.Control  type="text" onChange={onAutocompleteFieldChange} value={autocompletePath} />
+                    <Form.Text className="text-muted">
+                      Optional: Provide a value to enable
+                    </Form.Text>
                   </Col>
                 </Form.Row>
               </Form>
@@ -297,7 +311,7 @@ const Search = ({ indexFields, actions, state }: Props) => {
           {renderDatabaseConfig()}
           <Form className="mt-4">
             <Form.Row className="align-items-center">
-              <Col sm={4} className="my-1">
+              <Col  sm={8} className="my-1">
                 <Form.Label>Search for...</Form.Label>
                 <Form.Control placeholder={`Your search text...`} onChange={onQueryChange} onKeyDown={(event) => { if (query?.length && event.key === 'Enter') { onSubmit(event) } }} value={query} />
                 {renderAutocompleteMatches()}
@@ -305,20 +319,7 @@ const Search = ({ indexFields, actions, state }: Props) => {
                   We use this to query your index
                 </Form.Text>
               </Col>
-              <Col sm={3} className="my-1">
-                <Form.Label>In these indexed fields...</Form.Label>
-                <Form.Control type="text" onChange={onFieldChange} onKeyDown={(event) => { if (query?.length && event.key === 'Enter') { onSubmit(event) } }} value={searchPath} />
-                <Form.Text className="text-muted">
-                  Separate multiple fields with comma
-                </Form.Text>
-              </Col>
-              <Col sm={3} className="my-1">
-                <Form.Label>Autocomplete with...</Form.Label>
-                <Form.Control placeholder={`Autocomplete field name`} type="text" onChange={onAutocompleteFieldChange} value={autocompletePath} />
-                <Form.Text className="text-muted">
-                  Optional: Provide a value to enable
-                </Form.Text>
-              </Col>
+
             </Form.Row>
             <Form.Row className="align-items-center">
               <Col xs="auto" className="my-3" >
